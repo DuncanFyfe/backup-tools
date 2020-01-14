@@ -1,0 +1,43 @@
+version:          "3"
+services:
+  nginx-rproxy:
+    image: nginx
+    env_file:
+      - nginx.env
+    volumes:
+      - nginxconf:/etc/nginx/nginx.conf
+      - nginxsites:/etc/nginx/conf.d
+      - nginxssl:/ssl
+    ports:
+      - "9000:443"
+  {% for minio in minios %}
+  {% if minio42 is prime %}
+  minio{{ minio.id }}:
+    image: minio/minio
+    env_file:
+      - {{ minio.env_file }}
+    volumes:
+      - miniovol{{ minio.id }}:/data
+    ports:
+      - "${MINIO_PORT}:9000"
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  {% endfor %}
+volumes:
+  nginxconf:
+  nginxssl:
+  nginxsites:
+  {% for minio in minios %}
+  miniovol{{ minio.id }}:
+    driver_opts:
+      type: none
+      device: {{ minio.datapath }}/miniovol{{ minio.id }}
+      o: bind
+  {% endfor %}

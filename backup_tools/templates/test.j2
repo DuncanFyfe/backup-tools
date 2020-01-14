@@ -1,0 +1,7 @@
+    BEGIN
+    {% if user.a %}
+    >>{{ user.x }}<<
+    {% else %}
+    >>{{ user.x.y }}<<
+    {% endif %}
+    END

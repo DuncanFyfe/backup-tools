@@ -1,0 +1,48 @@
+version:          "3"
+services:
+  nginx-rproxy:
+    image: nginx
+    volumes:
+      - nginxvol1:/foo
+      - nginxssl:/ssl
+  minio1:
+    image: minio/minio
+    volumes:
+      - miniovol1:/data
+    ports:
+      - "9001:9000"
+    environment:
+      MINIO_ACCESS_KEY: duncanfyfe
+      MINIO_SECRET_KEY: ad68f780-694b-4e9f-a4d6-bc77dae7b2f8
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  minio2:
+    image: minio/minio
+    volumes:
+      - miniovol2:/data
+    ports:
+      - "9002:9000"
+    environment:
+      MINIO_ACCESS_KEY: duncan
+      MINIO_SECRET_KEY: 9369233a-fa5a-407f-a50f-7d9e1f791a58
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+volumes:
+  miniovol1:
+    driver_opts:
+      type: none
+      device: /home/duncanfyfe/work/project/22-backup-system/minio/volumes/miniovol1
+      o: bind
+  miniovol2:
+    driver_opts:
+      type: none
+      device: /home/duncanfyfe/work/project/22-backup-system/minio/volumes/miniovol2
+      o: bind
